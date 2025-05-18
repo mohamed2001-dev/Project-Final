@@ -82,4 +82,64 @@ export const updateUser = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+// Send a friend request
+export const sendFriendRequest = async (req, res) => {
+  try {
+    const { id, targetId } = req.params;
+
+    const user = await User.findById(id);
+    const target = await User.findById(targetId);
+
+    if (!user || !target) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (
+      user.friends.includes(targetId) ||
+      target.friendRequests.includes(id)
+    ) {
+      return res.status(400).json({ message: "Already friends or request sent" });
+    }
+
+    target.friendRequests.push(id);
+    await target.save();
+
+    res.status(200).json({ message: "Friend request sent" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Confirm a friend request
+export const confirmFriendRequest = async (req, res) => {
+  try {
+    const { id, senderId } = req.params;
+
+    const user = await User.findById(id);
+    const sender = await User.findById(senderId);
+
+    if (!user || !sender) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (!user.friendRequests.includes(senderId)) {
+      return res.status(400).json({ message: "No request from this user" });
+    }
+
+    // Add each other as friends
+    user.friends.push(senderId);
+    sender.friends.push(id);
+
+    // Remove request
+    user.friendRequests = user.friendRequests.filter((uid) => uid.toString() !== senderId);
+
+    await user.save();
+    await sender.save();
+
+    res.status(200).json({ message: "Friend request confirmed" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 
