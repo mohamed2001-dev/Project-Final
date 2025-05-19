@@ -84,3 +84,28 @@ export const deletePost = async (req, res) => {
   }
 };
 
+export const commentOnPost  = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const { userId, comment } = req.body;
+
+    const user = await User.findById(userId);
+    const post = await Post.findById(postId);
+
+    const newComment = {
+      userId,
+      userName: `${user.firstName} ${user.lastName}`,
+      userPicturePath: user.picturePath,
+      text: comment,
+    };
+
+    post.comments.push(newComment);
+    const updatedPost = await post.save();
+
+    res.status(200).json(updatedPost);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+

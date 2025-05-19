@@ -20,18 +20,15 @@ const PostsWidget = ({ userId, isProfile = false }) => {
         ? `http://localhost:3001/posts/${userId}/posts?page=${page}&limit=${postsPerPage}`
         : `http://localhost:3001/posts?page=${page}&limit=${postsPerPage}`;
 
-      console.log("Fetching posts from URL:", url);  // <--- DEBUG
-
       const response = await fetch(url, {
         method: "GET",
         headers: { Authorization: `Bearer ${token}` },
       });
 
       const data = await response.json();
+      console.log("Fetched posts:", data); // should be an array
 
-      console.log("Fetched posts data:", data); // <--- DEBUG
-
-      const newPosts = data.posts || [];
+      const newPosts = Array.isArray(data) ? data : data.posts || [];
 
       if (page === 1) {
         dispatch(setPosts({ posts: newPosts }));

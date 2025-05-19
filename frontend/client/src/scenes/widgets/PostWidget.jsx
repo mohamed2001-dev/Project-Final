@@ -49,7 +49,7 @@ const PostWidget = ({
   const { palette } = useTheme();
   const isOwner = loggedInUserId === postUserId;
 
-  // 🔍 Fetch post owner's user data
+  // Fetch post owner's user data
   useEffect(() => {
     const fetchUser = async () => {
       const res = await fetch(`http://localhost:3001/users/${postUserId}`, {
@@ -101,6 +101,7 @@ const PostWidget = ({
     }
   };
 
+  // UPDATED comment submit handler - sends full comment info expected by backend
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
     if (!comment.trim()) return;
@@ -112,7 +113,12 @@ const PostWidget = ({
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ userId: loggedInUserId, comment }),
+        body: JSON.stringify({
+          userId: loggedInUserId,
+          userName: postUser ? postUser.firstName + " " + postUser.lastName : "Unknown User",
+          userPicturePath: userPicturePath,
+          text: comment,
+        }),
       });
       const updatedPost = await res.json();
       dispatch(setPost({ post: updatedPost }));
